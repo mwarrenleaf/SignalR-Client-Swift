@@ -89,7 +89,9 @@ public class HttpConnection: Connection {
     private func negotiate(negotiateUrl: URL, accessToken: String?, negotiateDidComplete: @escaping (NegotiationResponse) -> Void) {
         if let accessToken = accessToken {
             logger.log(logLevel: .debug, message: "Overriding accessToken")
-            options.accessTokenProvider = { accessToken }
+            options.accessTokenProvider = { completionHandler in
+                completionHandler(accessToken)
+            }
         }
 
         let httpClient = options.httpClientFactory(options)

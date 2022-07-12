@@ -25,15 +25,21 @@ public class WebsocketsTransport: NSObject, Transport, URLSessionWebSocketDelega
     }
 
     public func start(url: URL, options: HttpConnectionOptions) {
-        logger.log(logLevel: .info, message: "Starting WebSocket transport")
+        options.accessTokenProvider { (authToken) in
+            self.logger.log(logLevel: .info, message: "Starting WebSocket transport")
 
-        var request = URLRequest(url: convertUrl(url: url))
-        populateHeaders(headers: options.headers, request: &request)
-        setAccessToken(accessTokenProvider: options.accessTokenProvider, request: &request)
-        urlSession = URLSession(configuration: .default, delegate: self, delegateQueue: OperationQueue())
-        webSocketTask = urlSession!.webSocketTask(with: request)
-        
-        webSocketTask!.resume()
+            var request = URLRequest(url: self.convertUrl(url: url))
+            self.populateHeaders(headers: options.headers, request: &request)
+            
+            if let accessToken = authToken {
+                request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+            }
+            
+            self.urlSession = URLSession(configuration: .default, delegate: self, delegateQueue: OperationQueue())
+            self.webSocketTask = self.urlSession!.webSocketTask(with: request)
+            
+            self.webSocketTask!.resume()
+        }
     }
 
     public func send(data: Data, sendDidComplete: @escaping (Error?) -> Void) {
@@ -160,12 +166,6 @@ public class WebsocketsTransport: NSObject, Transport, URLSessionWebSocketDelega
     @inline(__always) private func populateHeaders(headers: [String : String], request: inout URLRequest) {
         headers.forEach { (key, value) in
             request.addValue(value, forHTTPHeaderField: key)
-        }
-    }
-
-    @inline(__always) private func setAccessToken(accessTokenProvider: () -> String?, request: inout URLRequest) {
-        if let accessToken = accessTokenProvider() {
-            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         }
     }
 }

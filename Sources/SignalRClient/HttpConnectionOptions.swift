@@ -23,7 +23,9 @@ public class HttpConnectionOptions {
      - note: the factory will be called before each http request and will set the `Authorization` token value to: `Bearer {token-returned-by-factory}` unless
              the returned value is `nil` in which case the `Authorization` header will not be created
     */
-    public var accessTokenProvider: () -> String? = { return nil }
+    public var accessTokenProvider: ((_ completionHandler: @escaping (String?) -> Void) -> Void) = { handler in
+        handler(nil)
+    }
 
     /**
      A factory for creating an HTTP client.
@@ -47,6 +49,16 @@ public class HttpConnectionOptions {
     /**
      Initializes an `HttpConnectionOptions`.
      */
-    public init() {
+    public init(from options: HttpConnectionOptions? = nil) {
+        if let options = options {
+            self.headers = options.headers
+            self.accessTokenProvider = options.accessTokenProvider
+            self.httpClientFactory = options.httpClientFactory
+            self.skipNegotiation = options.skipNegotiation
+            self.requestTimeout = options.requestTimeout
+            self.authenticationChallengeHandler = options.authenticationChallengeHandler
+        }
     }
+    
+    
 }

@@ -908,7 +908,9 @@ class HubConnectionTests: XCTestCase {
 
         let hubConnection = HubConnectionBuilder(url: TARGET_TESTHUB_URL)
             .withHttpConnectionOptions() { httpConnectionOptions in
-                httpConnectionOptions.accessTokenProvider = { return "abc" }
+                httpConnectionOptions.accessTokenProvider =  { completionHandler in
+                    completionHandler("abc")
+                }
             }
             .withHubConnectionDelegate(delegate: hubConnectionDelegate)
             .build()

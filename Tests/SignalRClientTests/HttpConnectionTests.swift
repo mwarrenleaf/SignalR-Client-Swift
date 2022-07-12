@@ -588,8 +588,10 @@ class HttpConnectionTests: XCTestCase {
             }
 
             XCTAssertEqual("https://service/negotiate?abcdef", url.absoluteString)
-            XCTAssertEqual("xyz", httpConnectionOptions.accessTokenProvider())
-
+            httpConnectionOptions.accessTokenProvider { accessToken in
+                XCTAssertEqual("xyz", accessToken)
+            }
+            
             redirectionExpectation.fulfill()
             return (HttpResponse(statusCode: 500, contents: nil), nil)
         })
